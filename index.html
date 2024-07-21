@@ -15,6 +15,73 @@
         <li>Call a friend</li>
     </ul>
 
+    <h2>Login</h2>
+    <form id="loginForm">
+        <input type="email" name="email" placeholder="Enter your email" required>
+        <button type="submit">Login</button>
+    </form>
+
+    <h2>HTTP Status Codes</h2>
+    <table id="statusCodes">
+        <thead>
+            <tr>
+                <th>Name</th>
+                <th>Numerical Code</th>
+                <th>Purpose</th>
+                <th>Situation</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td>Unprocessable Entity</td>
+                <td>422</td>
+                <td>The server understands the content type of the request entity, and the syntax of the request entity is correct, but it was unable to process the contained instructions.</td>
+                <td>Often returned when the server cannot process a POST or PUT request due to semantic errors.</td>
+            </tr>
+            <tr>
+                <td>Too Many Requests</td>
+                <td>429</td>
+                <td>The user has sent too many requests in a given amount of time ('rate limiting').</td>
+                <td>Returned when a user exceeds the rate limits defined by the server.</td>
+            </tr>
+            <tr>
+                <td>Bad Gateway</td>
+                <td>502</td>
+                <td>The server was acting as a gateway or proxy and received an invalid response from the upstream server.</td>
+                <td>Returned when the proxy server gets an invalid response from an external server.</td>
+            </tr>
+            <tr>
+                <td>Service Unavailable</td>
+                <td>503</td>
+                <td>The server is not ready to handle the request. Common causes are a server that is down for maintenance or that is overloaded.</td>
+                <td>Returned during high traffic events when the server is unable to handle the request due to being overloaded.</td>
+            </tr>
+            <tr>
+                <td>Gateway Timeout</td>
+                <td>504</td>
+                <td>The server was acting as a gateway or proxy and did not receive a timely response from the upstream server.</td>
+                <td>Returned when a request times out at the proxy server because the upstream server did not respond in time.</td>
+            </tr>
+        </tbody>
+    </table>
+
     <script src="script.js"></script>
+    <script>
+        document.getElementById('loginForm').addEventListener('submit', function(event) {
+            event.preventDefault();
+            const formData = new FormData(this);
+            const email = formData.get('email');
+            
+            fetch('/login', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/x-www-form-urlencoded'
+                },
+                body: `email=${encodeURIComponent(email)}`
+            })
+            .then(response => response.text())
+            .then(data => alert(data));
+        });
+    </script>
 </body>
 </html>
