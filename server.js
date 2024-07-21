@@ -1,18 +1,55 @@
 const http = require('http');
 const fs = require('fs');
 const path = require('path');
+const querystring = require('querystring');
 
 const port = 8080;
 
 const server = http.createServer((req, res) => {
     const url = req.url;
-    
-    if (url === '/home') {
-        // Set a cookie with user data
-        res.setHeader('Set-Cookie', ['name=Sanju', 'email=sanju@gmail.com']);
+    const method = req.method;
+
+    if (url === '/login' && method === 'POST') {
+        // Handle login and set the cookie with the user's email
+        let body = '';
+
+        req.on('data', chunk => {
+            body += chunk.toString();
+        });
+
+        req.on('end', () => {
+            const { email } = querystring.parse(body);
+
+            if (email) {
+                res.setHeader('Set-Cookie', `email=${email}; HttpOnly`);
+                res.writeHead(200, { 'Content-Type': 'text/plain' });
+                res.end('Login successful');
+            } else {
+                res.writeHead(400, { 'Content-Type': 'text/plain' });
+                res.end('Email is required');
+            }
+        });
+    } else if (url === '/home') {
+        // Retrieve cookies from the request
+        const cookies = req.headers.cookie;
+        let email = '';
+
+        if (cookies) {
+            const parsedCookies = cookies.split(';').reduce((acc, cookie) => {
+                const [key, value] = cookie.split('=').map(c => c.trim());
+                acc[key] = value;
+                return acc;
+            }, {});
+
+            email = parsedCookies.email;
+        }
 
         res.writeHead(200, { 'Content-Type': 'text/plain' });
-        res.end('Welcome to Home Page');
+        if (email) {
+            res.end(`Welcome to Home Page. Your email: ${email}`);
+        } else {
+            res.end('Welcome to Home Page. Please log in to see your email.');
+        }
     } else if (url === '/status-codes') {
         res.writeHead(200, { 'Content-Type': 'application/json' });
         const statusCodesInfo = [
@@ -77,14 +114,6 @@ const server = http.createServer((req, res) => {
 
                 // If file found, respond with the appropriate content type
                 res.writeHead(200, { 'Content-Type': contentType });
-
-                // Retrieve cookies from the request
-                const cookies = req.headers.cookie;
-                if (cookies) {
-                    // Do something with the cookies
-                    console.log('Cookies:', cookies);
-                }
-
                 res.write(data);
                 res.end();
             }
